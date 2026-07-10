@@ -21,7 +21,13 @@ import streamlit as st
 from crewai import Agent, Crew, Process, Task
 from crewai.tools import tool
 from crewai_tools import SerperDevTool
+from dotenv import load_dotenv
 from pydantic import BaseModel
+
+# Load API keys from a local .env file (NAME=value lines) into environment
+# variables, so they don't have to be set in the shell for every session.
+# Shell-set variables still work and take precedence over the .env file.
+load_dotenv()
 
 # ---------------------------------------------------------------------------
 # Constants

@@ -97,10 +97,23 @@ venv\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 
-### 5. Configure API keys (environment variables)
+### 5. Configure API keys
 
-The app reads keys **only** from environment variables and validates them
-before starting the crew. **Never hard-code keys or commit them to Git.**
+The app reads keys from environment variables and validates them before
+starting the crew. **Never hard-code keys or commit them to Git.**
+
+**Option A — `.env` file (recommended for local development):** create a
+file named `.env` in the project folder (it is git-ignored) with:
+
+```
+OPENAI_API_KEY=your-openai-key
+SERPER_API_KEY=your-serper-key
+```
+
+The app loads it automatically at startup, so you never re-enter keys in
+the terminal. Use exactly `NAME=value` — no spaces around `=`.
+
+**Option B — shell environment variables** (take precedence over `.env`):
 
 macOS/Linux:
 
