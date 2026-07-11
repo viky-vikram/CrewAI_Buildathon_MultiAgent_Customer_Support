@@ -1,0 +1,21 @@
+[theme]
+base = "light"
+primaryColor = "#7C5CFC"
+backgroundColor = "#f7f5fc"
+secondaryBackgroundColor = "#efecfa"
+textColor = "#2a2f45"
+linkColor = "#7C5CFC"
+borderColor = "#e6e1f7"
+baseRadius = "12px"
+buttonRadius = "10px"
+linkUnderline = false
+showWidgetBorder = true
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+headingFontWeights = [800, 700, 700, 600, 600, 600]
+
+[theme.sidebar]
+backgroundColor = "#241f4e"
+secondaryBackgroundColor = "#332b6b"
+textColor = "#ffffff"
+borderColor = "#332b6b"
+primaryColor = "#a78bfa"
