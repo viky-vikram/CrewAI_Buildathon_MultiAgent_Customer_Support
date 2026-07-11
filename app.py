@@ -555,6 +555,12 @@ st.html(
 
 def _set_view(view: str) -> None:
     st.session_state.view = view
+    # "New Query" starts a fresh session: previous output, errors and the
+    # typed query are cleared (past runs remain available under History).
+    if view == "new_query":
+        st.session_state.support_result = None
+        st.session_state.support_error = None
+        st.session_state.clear_query = True
 
 
 def _completed_label(timestamp: float) -> str:
