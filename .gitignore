@@ -220,3 +220,5 @@ __marimo__/
 # Project-specific
 .env.*
 answers.txt
+answers.txt.lock
+answers-*.txt

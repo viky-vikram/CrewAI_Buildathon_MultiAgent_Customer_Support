@@ -1,0 +1,20 @@
+# Never bake secrets or user data into the image
+.env
+.env.*
+.streamlit/secrets.toml
+answers.txt
+answers.txt.lock
+answers-*.txt
+
+# Local development artifacts
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.git/
+.github/
+.claude/
+tests/
+README.md

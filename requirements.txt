@@ -1,5 +1,12 @@
-crewai>=0.100.0
-crewai-tools>=0.33.0
-streamlit>=1.32.0
-pydantic>=2.0.0
-python-dotenv>=1.0.0
+# Runtime dependencies. Floors match the features the code actually uses;
+# ceilings guard against breaking major/minor releases:
+#   - streamlit is pinned to 1.59.x because the UI styles internal DOM
+#     test-ids that can change between minor releases.
+#   - crewai 1.x is the tested API generation.
+# requirements.lock holds the exact tested versions (pip freeze).
+crewai>=1.15,<2
+crewai-tools>=1.15,<2
+streamlit>=1.59,<1.60
+pydantic>=2.12,<3
+python-dotenv>=1.0,<2
+filelock>=3.13,<4

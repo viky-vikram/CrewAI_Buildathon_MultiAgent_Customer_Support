@@ -1,0 +1,22 @@
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["venv"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import ordering)
+    "B",   # bugbear (likely bugs)
+    "UP",  # pyupgrade (modern syntax)
+    "SIM", # simplifications
+]
+
+[tool.mypy]
+python_version = "3.12"
+files = ["app.py", "support_crew"]
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
