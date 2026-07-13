@@ -54,6 +54,7 @@ app.py                     # ALL application code in one file (per the
                            #   rotation, the file-saving tool, the three
                            #   agents/tasks/crew, and the Streamlit UI
 tests/                     # offline unit + AppTest smoke tests (pytest)
+data/answers.txt           # saved records (auto-created, git-ignored)
 .github/workflows/ci.yml   # CI: ruff + mypy + pytest on every push
 pyproject.toml             # ruff + mypy + pytest configuration
 .streamlit/config.toml     # base theme (palette, fonts)
@@ -256,8 +257,9 @@ network access are required. The same three checks run in CI
 
 ## About `answers.txt` (data lifecycle)
 
-- Created **automatically** in the project folder after the first successful
-  query — you never create it manually.
+- Created **automatically** at `data/answers.txt` after the first successful
+  query — both the `data/` folder and the file are created for you; you
+  never create them manually.
 - Each run **appends** a new, clearly separated record (UTF-8) containing a
   unique **Record-ID**, the original query, the Assistant's answer and the
   Web Search answer, so earlier support records are never erased.
@@ -269,9 +271,9 @@ network access are required. The same three checks run in CI
   `SUPPORT_CREW_ANSWERS_MAX_BYTES`) it is renamed to a timestamped archive
   (`answers-YYYYMMDD-HHMMSS.txt`) and a fresh file is started, so stored
   queries can never grow without bound.
-- `answers.txt` and its archives are **git-ignored on purpose**: they
-  contain real user queries and generated support content, which should not
-  be published to GitHub.
+- The whole `data/` folder is **git-ignored on purpose**: it contains real
+  user queries and generated support content, which should not be published
+  to GitHub.
 
 ### What "your data is safe" means (and doesn't)
 
@@ -282,8 +284,8 @@ network access are required. The same three checks run in CI
   machine running the app — treat that file as sensitive.
 - Nothing is sent anywhere else, nothing is logged verbatim (logs record
   metadata only), and no analytics or tracking exist in the app.
-- **To purge all stored data:** delete `answers.txt` and any
-  `answers-*.txt` archives from the project folder.
+- **To purge all stored data:** delete the `data/` folder (it holds
+  `answers.txt` and any `answers-*.txt` archives).
 
 ## Stopping the App
 
@@ -300,8 +302,9 @@ deactivate
    the assignment), `tests/`, `.github/`, `.streamlit/config.toml`,
    `pyproject.toml`, `.env.example`, `Dockerfile`, `.dockerignore`,
    `LICENSE`, `requirements.txt`, `requirements-dev.txt`,
-   `.gitignore`, `README.md`. The `.gitignore` keeps `venv/`, `.env`,
-   `answers.txt` and its lock/archive files out of the repository.
+   `.gitignore`, `README.md`. The `.gitignore` keeps `venv/`, `.env` and
+   the `data/` folder (answers file, lock and archives) out of the
+   repository.
 2. **Keep all API keys out of GitHub** — double-check no `.env` file or key
    string is staged before pushing.
 3. Share the GitHub repository link through **WhatsApp**.

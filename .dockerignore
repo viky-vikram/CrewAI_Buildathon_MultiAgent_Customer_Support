@@ -2,6 +2,7 @@
 .env
 .env.*
 .streamlit/secrets.toml
+data/
 answers.txt
 answers.txt.lock
 answers-*.txt

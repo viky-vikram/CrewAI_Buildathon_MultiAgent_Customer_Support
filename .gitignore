@@ -224,6 +224,7 @@ Thumbs.db
 # Project-specific
 .env.*
 !.env.example
+data/
 answers.txt
 answers.txt.lock
 answers-*.txt

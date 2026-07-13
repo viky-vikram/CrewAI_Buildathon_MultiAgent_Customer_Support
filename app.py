@@ -98,8 +98,9 @@ _fill_env_from_streamlit_secrets()
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
-# answers.txt lives next to app.py and is created automatically on first save.
-ANSWERS_FILE = PROJECT_ROOT / "answers.txt"
+# answers.txt lives in the data/ folder (git-ignored); both the folder and
+# the file are created automatically on first save.
+ANSWERS_FILE = PROJECT_ROOT / "data" / "answers.txt"
 
 # The LLM every agent runs on. Pinned explicitly so behaviour and cost do not
 # drift with library defaults; override without a code change via env var.
@@ -423,6 +424,9 @@ def append_record(
         assistant_answer=assistant_answer.strip(),
         web_search_answer=web_search_answer.strip(),
     )
+    # The containing folder (data/) must exist before the lock file and the
+    # answers file can be created inside it.
+    path.parent.mkdir(parents=True, exist_ok=True)
     with _lock_for(path):
         _rotate_if_needed(path, max_bytes)
         with open(path, "a", encoding="utf-8") as f:

@@ -10,6 +10,20 @@ def test_append_creates_file_and_returns_record_id(tmp_path):
     assert len(record_id) == 32  # uuid4 hex
 
 
+def test_append_creates_missing_parent_folder(tmp_path):
+    # The default path lives in data/, which must be auto-created on the
+    # very first save (fresh clone, empty Docker volume).
+    target = tmp_path / "data" / "answers.txt"
+    assert not target.parent.exists()
+    app.append_record("q", "a1", "a2", path=target)
+    assert target.exists()
+
+
+def test_default_answers_path_is_inside_data_folder():
+    assert app.ANSWERS_FILE.parent.name == "data"
+    assert app.ANSWERS_FILE.name == "answers.txt"
+
+
 def test_record_contains_query_answers_and_id(tmp_path):
     target = tmp_path / "answers.txt"
     record_id = app.append_record(
