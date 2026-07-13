@@ -225,10 +225,10 @@ or `answers.txt` (see `.dockerignore`).
 2. Click **Run Support Crew** (or press **Ctrl+Enter** in the text box).
 3. A spinner shows while the three agents run sequentially (this can take a
    minute).
-4. The page then shows a success banner, the **Assistant Answer** and
-   **Web Search Answer** cards side by side, and a confirmation that the
-   record was saved to `answers.txt` (with a download button). The query box
-   moves below the results, cleared and ready for the next question.
+4. The page then shows a success banner and the **Assistant Answer** and
+   **Web Search Answer** cards side by side (the record is saved to
+   `data/answers.txt` in the background). The query box moves below the
+   results, cleared and ready for the next question.
 
 ### Sidebar pages
 

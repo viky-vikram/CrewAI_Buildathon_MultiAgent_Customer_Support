@@ -742,7 +742,7 @@ _CSS_TEMPLATE = """
 /* decorative chrome is not selectable; answers stay copyable */
 [data-testid="stSidebar"] [data-testid="stSidebarContent"],
 .sc-topbar, .sc-hero, .sc-steps, .sc-badges,
-.sc-ask-label, .sc-success, .sc-saved-row, .sc-card-head, .sc-card-foot {
+.sc-ask-label, .sc-success, .sc-card-head, .sc-card-foot {
     user-select: none !important;
 }
 
@@ -947,25 +947,6 @@ __ACTIVE_NAV__ button {
     border-top: 1px solid #f0edf9; padding-top: .7rem; margin-top: .4rem;
     color: #8a8fa3; font-size: .8rem;
 }
-
-/* ---- saved-to-file banner ---- */
-.st-key-saved_banner {
-    background: #e8f1fd; border: 1px solid #d4e5fa; border-radius: 14px;
-    padding: .9rem 1.2rem; margin-top: 1.4rem;
-}
-.sc-saved-row { display: flex; align-items: center; gap: .9rem; }
-.sc-saved-icon {
-    width: 30px; height: 30px; flex: 0 0 30px; border-radius: 50%;
-    background: #3b82f6; color: #ffffff; font-weight: 800; font-size: .85rem;
-    display: flex; align-items: center; justify-content: center;
-}
-.sc-saved-title { color: #2563eb; font-weight: 700; font-size: .95rem; }
-.sc-saved-sub { color: #64748b; font-size: .83rem; margin-top: .1rem; }
-.st-key-open_answers button {
-    background: #ffffff; color: #2563eb; border: 1px solid #bcd6f7;
-    font-weight: 600; border-radius: 10px; padding: .5rem 1.1rem;
-}
-.st-key-open_answers button:hover { border-color: #2563eb; color: #2563eb; }
 
 /* ---- simple content card (history / about) ---- */
 .st-key-content_card {
@@ -1312,33 +1293,6 @@ def render_outputs() -> None:
             )
 
         render_result_cards(res, res.completed_at or time.time())
-
-        if res.file_saved:
-            with st.container(key="saved_banner"):
-                left, right = st.columns([4, 1], vertical_alignment="center")
-                with left:
-                    st.html(
-                        """
-                        <div class="sc-saved-row">
-                            <div class="sc-saved-icon">i</div>
-                            <div>
-                                <div class="sc-saved-title">Results saved to answers.txt</div>
-                                <div class="sc-saved-sub">Your query and both answers
-                                have been securely saved.</div>
-                            </div>
-                        </div>
-                        """
-                    )
-                with right:
-                    st.download_button(
-                        "Open answers.txt",
-                        icon=":material/folder_open:",
-                        data=ANSWERS_FILE.read_bytes() if ANSWERS_FILE.exists() else b"",
-                        file_name="answers.txt",
-                        mime="text/plain",
-                        key="open_answers",
-                        width="stretch",
-                    )
 
 
 def render_new_query_view() -> None:
