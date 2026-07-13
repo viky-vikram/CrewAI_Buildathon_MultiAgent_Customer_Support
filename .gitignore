@@ -217,8 +217,13 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Operating-system metadata
+.DS_Store
+Thumbs.db
+
 # Project-specific
 .env.*
+!.env.example
 answers.txt
 answers.txt.lock
 answers-*.txt
