@@ -233,7 +233,11 @@ or `answers.txt` (see `.dockerignore`).
 ### Sidebar pages
 
 - **New Query** — the main page; clicking it again starts a fresh session
-  (clears the previous output and query box).
+  (clears the previous output and query box — the finished session then
+  appears under **Recents**).
+- **Recents** — shown below New Query once you have run at least one
+  query: the last five sessions of this browser session, newest first.
+  Click one to reopen its answers.
 - **History** — every query answered in the current browser session, with
   both answers per query.
 - **About** — a short description of the agent pipeline.

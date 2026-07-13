@@ -799,6 +799,21 @@ __ACTIVE_NAV__ button {
     background: rgba(255, 255, 255, .16) !important; color: #ffffff !important;
 }
 
+/* ---- recents (past sessions) under New Query ---- */
+.sc-recents-label {
+    color: rgba(226, 220, 255, .55); font-size: .72rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: .7rem .95rem .15rem;
+}
+[data-testid="stSidebar"] [class*="st-key-recent_"] button {
+    padding: .3rem .95rem; font-weight: 400;
+    color: rgba(255, 255, 255, .70);
+}
+[data-testid="stSidebar"] [class*="st-key-recent_"] button p {
+    font-size: .85rem; max-width: 190px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
 /* pin the privacy card to the bottom of the sidebar */
 [data-testid="stSidebarUserContent"] [data-testid="stVerticalBlock"] {
     min-height: calc(100vh - 5rem);
@@ -1102,11 +1117,39 @@ def init_session_state() -> None:
 def _set_view(view: str) -> None:
     st.session_state.view = view
     # "New Query" starts a fresh session: previous output, errors and the
-    # typed query are cleared (past runs remain available under History).
+    # typed query are cleared (past runs remain available under Recents
+    # and History).
     if view == "new_query":
         st.session_state.support_result = None
         st.session_state.support_error = None
         st.session_state.clear_query = True
+
+
+def _open_recent(index: int) -> None:
+    """Reopen a past session from the sidebar Recents list."""
+    st.session_state.view = "new_query"
+    st.session_state.support_error = None
+    st.session_state.support_result = st.session_state.history[index]
+    st.session_state.clear_query = True
+
+
+# How many past sessions the sidebar Recents list shows (History shows all).
+MAX_RECENTS = 5
+
+
+def _render_recents() -> None:
+    """Past sessions under New Query; clicking one restores its answers."""
+    history = st.session_state.history
+    if not history:
+        return
+    st.html('<div class="sc-recents-label">Recents</div>')
+    for offset, item in enumerate(reversed(history[-MAX_RECENTS:])):
+        index = len(history) - 1 - offset
+        label = item.query if len(item.query) <= 40 else f"{item.query[:40]}…"
+        st.button(
+            label, key=f"recent_{offset}", width="stretch",
+            on_click=_open_recent, args=(index,),
+        )
 
 
 def render_sidebar() -> None:
@@ -1116,6 +1159,7 @@ def render_sidebar() -> None:
             "New Query", icon=":material/chat:", key="nav_new_query",
             width="stretch", on_click=_set_view, args=("new_query",),
         )
+        _render_recents()
         st.button(
             "History", icon=":material/description:", key="nav_history",
             width="stretch", on_click=_set_view, args=("history",),
