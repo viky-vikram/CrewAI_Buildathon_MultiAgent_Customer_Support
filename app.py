@@ -559,6 +559,8 @@ def build_crew() -> tuple[Crew, Task, Task, Task]:
         expected_output=(
             "Only your direct answer to the customer's query, as plain "
             "helpful text with plain ASCII punctuation (straight quotes). "
+            "When the answer describes a procedure, format it as a "
+            "numbered list of short steps (1., 2., 3., ...). "
             "No preamble about how the answer was produced."
         ),
         agent=assistant,
@@ -576,7 +578,9 @@ def build_crew() -> tuple[Crew, Task, Task, Task]:
         expected_output=(
             "Only your answer to the customer's query based on the web "
             "search results, as plain helpful text with plain ASCII "
-            "punctuation (straight quotes)."
+            "punctuation (straight quotes). When the answer describes a "
+            "procedure, format it as a numbered list of short steps "
+            "(1., 2., 3., ...)."
         ),
         agent=web_search_assistant,
         # Explicit empty context: without this, CrewAI's sequential process
