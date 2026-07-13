@@ -7,7 +7,7 @@ import pytest
 from crewai import Process
 
 import app
-from app import SupportRecord, build_crew
+from app import build_crew
 
 
 @pytest.fixture()
@@ -49,14 +49,20 @@ def test_task3_receives_both_answers_as_context(crew_parts):
     assert task3.context == [task1, task2]
 
 
-def test_task3_returns_structured_support_record(crew_parts):
+def test_task3_replies_with_confirmation_only(crew_parts):
+    # Deliberate performance decision: no structured output on the entry
+    # task — repeating both answers back doubles its output tokens. The
+    # UI reads answers from task 1/2 outputs and verifies the save via
+    # the Record-ID instead.
     *_, task3 = crew_parts
-    assert task3.output_pydantic is SupportRecord
+    assert task3.output_pydantic is None
+    assert "short" in task3.expected_output.lower()
 
 
-def test_agents_use_pinned_model_and_timeout(crew_parts):
+def test_agents_use_pinned_model_timeout_and_iteration_cap(crew_parts):
     crew, *_ = crew_parts
     for agent in crew.agents:
         assert app.MODEL_NAME in str(agent.llm.model)
         assert agent.max_execution_time == app.AGENT_MAX_EXECUTION_TIME
+        assert agent.max_iter == app.AGENT_MAX_ITER
         assert agent.allow_delegation is False

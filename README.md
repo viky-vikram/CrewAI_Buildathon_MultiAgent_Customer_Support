@@ -175,6 +175,7 @@ Optional environment variables (all have sensible defaults):
 |---|---|---|
 | `SUPPORT_CREW_MODEL` | `gpt-4.1-mini` | LLM used by all three agents |
 | `SUPPORT_CREW_AGENT_TIMEOUT` | `120` | Per-agent execution ceiling (seconds) |
+| `SUPPORT_CREW_AGENT_MAX_ITER` | `3` | Reasoning-loop cap per agent (keeps runs fast) |
 | `SUPPORT_CREW_RUN_TIMEOUT` | `420` | Hard deadline for a whole crew run (seconds) |
 | `SUPPORT_CREW_MAX_QUERY_CHARS` | `2000` | Maximum accepted query length |
 | `SUPPORT_CREW_MAX_ATTEMPTS` | `3` | Attempts per run for transient failures |
@@ -253,8 +254,8 @@ pytest           # 41 offline tests
 
 The test suite is fully offline: configuration validation, record storage
 (locking, Record-IDs, rotation, formatting), error classification and retry
-policy, crew wiring (agent order, tool isolation, task context, structured
-output, pinned model/timeout), UI helpers, and headless app smoke tests
+policy, crew wiring (agent order, tool isolation, task context, pinned
+model/timeout/iteration cap), UI helpers, and headless app smoke tests
 (Streamlit `AppTest`: boot, navigation, input validation). No API keys or
 network access are required. The same three checks run in CI
 (`.github/workflows/ci.yml`) on every push and pull request.

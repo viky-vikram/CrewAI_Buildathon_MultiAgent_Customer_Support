@@ -14,7 +14,7 @@ Per the assignment, ALL application code lives in this single file,
 organised in sections:
 
     Configuration  -- settings, env loading, API-key validation
-    Models         -- SupportRecord (structured output) + RunResult
+    Models         -- RunResult (typed outcome of one crew run)
     Errors         -- error taxonomy, retries with backoff, run deadline
     Storage        -- locked answers.txt appends, Record-IDs, rotation
     Tool           -- the Entry Agent's file-saving tool
@@ -45,7 +45,6 @@ from crewai.tools import tool
 from crewai_tools import SerperDevTool
 from dotenv import load_dotenv
 from filelock import FileLock
-from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -71,6 +70,7 @@ _ENV_NAMES = (
     "SERPER_API_KEY",
     "SUPPORT_CREW_MODEL",
     "SUPPORT_CREW_AGENT_TIMEOUT",
+    "SUPPORT_CREW_AGENT_MAX_ITER",
     "SUPPORT_CREW_RUN_TIMEOUT",
     "SUPPORT_CREW_MAX_QUERY_CHARS",
     "SUPPORT_CREW_MAX_ATTEMPTS",
@@ -110,6 +110,10 @@ MODEL_NAME = os.environ.get("SUPPORT_CREW_MODEL", "gpt-4.1-mini")
 # can never spin the UI forever.
 AGENT_MAX_EXECUTION_TIME = int(os.environ.get("SUPPORT_CREW_AGENT_TIMEOUT", "120"))
 
+# Reasoning-loop cap per agent: enough for think -> tool call -> final
+# answer, while preventing wasted extra LLM round-trips on slow runs.
+AGENT_MAX_ITER = int(os.environ.get("SUPPORT_CREW_AGENT_MAX_ITER", "3"))
+
 # Overall deadline (seconds) for one crew run — the safety net above the
 # per-agent ceiling (3 agents x 120s + margin by default).
 RUN_TIMEOUT = int(os.environ.get("SUPPORT_CREW_RUN_TIMEOUT", "420"))
@@ -142,15 +146,6 @@ def missing_api_keys() -> list[str]:
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
-
-
-class SupportRecord(BaseModel):
-    """Reliably parseable final output returned by the Entry Agent."""
-
-    assistant_answer: str
-    web_search_answer: str
-    file_saved: bool
-    file_path: str
 
 
 @dataclass
@@ -505,6 +500,7 @@ def build_crew() -> tuple[Crew, Task, Task, Task]:
         tools=[],  # explicitly no tools
         llm=MODEL_NAME,
         max_execution_time=AGENT_MAX_EXECUTION_TIME,
+        max_iter=AGENT_MAX_ITER,
         allow_delegation=False,
         verbose=False,
     )
@@ -525,6 +521,7 @@ def build_crew() -> tuple[Crew, Task, Task, Task]:
         tools=[web_search_tool],  # the ONLY agent with web search
         llm=MODEL_NAME,
         max_execution_time=AGENT_MAX_EXECUTION_TIME,
+        max_iter=AGENT_MAX_ITER,
         allow_delegation=False,
         verbose=False,
     )
@@ -546,6 +543,7 @@ def build_crew() -> tuple[Crew, Task, Task, Task]:
         tools=[save_support_record],  # the ONLY agent with the file tool
         llm=MODEL_NAME,
         max_execution_time=AGENT_MAX_EXECUTION_TIME,
+        max_iter=AGENT_MAX_ITER,
         allow_delegation=False,
         verbose=False,
     )
@@ -570,10 +568,10 @@ def build_crew() -> tuple[Crew, Task, Task, Task]:
     web_search_task = Task(
         description=(
             "A customer submitted this support query:\n\n\"{query}\"\n\n"
-            "Use your web-search tool to search for this query, review the "
-            "results, and write a clear standalone answer grounded in the "
-            "information you found. Do not copy or reference the previous "
-            "agent's answer."
+            "Use your web-search tool to run ONE search for this query, "
+            "review the results, and write a clear standalone answer "
+            "grounded in the information you found. Do not run additional "
+            "searches. Do not copy or reference the previous agent's answer."
         ),
         expected_output=(
             "Only your answer to the customer's query based on the web "
@@ -600,27 +598,44 @@ def build_crew() -> tuple[Crew, Task, Task, Task]:
             "arguments: the original query, the complete Assistant answer, "
             "and the complete Web Search Assistant answer — all verbatim, "
             "with no truncation, summarising or rewriting.\n"
-            "2. After the tool confirms the save, return the final "
-            "structured result containing both answers unchanged, "
-            "file_saved=true, and file_path='answers.txt'."
+            "2. After the tool confirms the save, reply with ONE short "
+            "sentence confirming the record was saved to answers.txt. "
+            "Do NOT repeat the answers in your reply."
         ),
         expected_output=(
-            "A structured object with fields assistant_answer, "
-            "web_search_answer, file_saved and file_path, where both "
-            "answers are preserved verbatim from the context."
+            "A single short confirmation sentence stating that the record "
+            "was saved to answers.txt."
         ),
         agent=entry_agent,
         context=[direct_answer_task, web_search_task],
-        output_pydantic=SupportRecord,
     )
 
     crew = Crew(
         agents=[assistant, web_search_assistant, entry_agent],
         tasks=[direct_answer_task, web_search_task, entry_task],
         process=Process.sequential,  # required: strict 1 -> 2 -> 3 order
+        task_callback=_make_task_timer(),
         verbose=False,
     )
     return crew, direct_answer_task, web_search_task, entry_task
+
+
+def _make_task_timer() -> Callable[[object], None]:
+    """Per-task duration logging, so slow stages are visible in the logs."""
+    started = time.monotonic()
+    previous = {"t": started}
+
+    def _on_task_done(output: object) -> None:
+        now = time.monotonic()
+        logger.info(
+            "Task by '%s' finished in %.1fs (run total %.1fs)",
+            getattr(output, "agent", "unknown"),
+            now - previous["t"],
+            now - started,
+        )
+        previous["t"] = now
+
+    return _on_task_done
 
 
 def _usage_metric(result: object, name: str) -> int | None:
@@ -661,13 +676,6 @@ def _attempt_run(query: str) -> RunResult:
         size_after = ANSWERS_FILE.stat().st_size if ANSWERS_FILE.exists() else 0
         file_saved = size_after > size_before
 
-    # Optional cross-check with the Entry Agent's structured output.
-    entry_record = getattr(result, "pydantic", None)
-    if entry_record is not None and not assistant_answer:
-        assistant_answer = entry_record.assistant_answer.strip()
-    if entry_record is not None and not web_search_answer:
-        web_search_answer = entry_record.web_search_answer.strip()
-
     return RunResult(
         query=query,
         assistant_answer=assistant_answer,
@@ -685,8 +693,10 @@ def run_support_crew(query: str) -> RunResult:
 
     The answers shown in the UI are taken from the REAL outputs of Task 1
     and Task 2 (task.output.raw), so the UI never depends on parsing the
-    Entry Agent's prose. The Entry Agent still performs the file save and
-    returns its own structured record as a cross-check.
+    Entry Agent's prose. The Entry Agent performs the file save (verified
+    independently via the Record-ID) and replies with a short confirmation
+    only — repeating both answers back would double its output tokens for
+    no benefit.
 
     Each attempt runs in a worker thread with a hard overall deadline
     (RUN_TIMEOUT), so the UI can never spin forever even if a provider call

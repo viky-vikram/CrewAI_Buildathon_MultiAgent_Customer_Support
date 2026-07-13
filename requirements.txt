@@ -7,6 +7,5 @@
 crewai>=1.15,<2
 crewai-tools>=1.15,<2
 streamlit>=1.59,<1.60
-pydantic>=2.12,<3
 python-dotenv>=1.0,<2
 filelock>=3.13,<4
