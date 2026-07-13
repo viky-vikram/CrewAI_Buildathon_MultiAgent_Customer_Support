@@ -62,7 +62,7 @@ support_crew/
 static/logo.svg            # sidebar logo
 tests/                     # offline unit + AppTest smoke tests (pytest)
 .github/workflows/ci.yml   # CI: ruff + mypy + pytest on every push
-pyproject.toml             # ruff + mypy configuration
+pyproject.toml             # ruff + mypy + pytest configuration
 .streamlit/config.toml     # base theme (palette, fonts)
 .env.example               # template for local API keys
 Dockerfile / .dockerignore # container deployment
@@ -306,7 +306,7 @@ deactivate
 1. Push the project code to GitHub: `app.py`, the `support_crew/` package,
    `static/`, `tests/`, `.github/`, `.streamlit/config.toml`,
    `pyproject.toml`, `.env.example`, `Dockerfile`, `.dockerignore`,
-   `LICENSE`, `requirements.txt`, `requirements-dev.txt`, `pytest.ini`,
+   `LICENSE`, `requirements.txt`, `requirements-dev.txt`,
    `.gitignore`, `README.md`. The `.gitignore` keeps `venv/`, `.env`,
    `answers.txt` and its lock/archive files out of the repository.
 2. **Keep all API keys out of GitHub** — double-check no `.env` file or key
