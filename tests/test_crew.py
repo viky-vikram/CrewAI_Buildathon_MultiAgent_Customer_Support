@@ -6,9 +6,8 @@ These tests construct the crew but never kick it off — no network calls.
 import pytest
 from crewai import Process
 
-from support_crew import config
-from support_crew.crew import build_crew
-from support_crew.models import SupportRecord
+import app
+from app import SupportRecord, build_crew
 
 
 @pytest.fixture()
@@ -58,6 +57,6 @@ def test_task3_returns_structured_support_record(crew_parts):
 def test_agents_use_pinned_model_and_timeout(crew_parts):
     crew, *_ = crew_parts
     for agent in crew.agents:
-        assert config.MODEL_NAME in str(agent.llm.model)
-        assert agent.max_execution_time == config.AGENT_MAX_EXECUTION_TIME
+        assert app.MODEL_NAME in str(agent.llm.model)
+        assert agent.max_execution_time == app.AGENT_MAX_EXECUTION_TIME
         assert agent.allow_delegation is False

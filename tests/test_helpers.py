@@ -2,7 +2,7 @@
 
 import time
 
-from support_crew.ui.components import NAV_KEYS, completed_label
+from app import NAV_KEYS, completed_label
 
 
 def test_completed_label_just_now():

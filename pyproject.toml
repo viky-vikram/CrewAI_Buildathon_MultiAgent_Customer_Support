@@ -16,7 +16,7 @@ select = [
 
 [tool.mypy]
 python_version = "3.12"
-files = ["app.py", "support_crew"]
+files = ["app.py"]
 ignore_missing_imports = true
 check_untyped_defs = true
 warn_unused_ignores = true

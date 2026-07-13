@@ -16,8 +16,6 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app.py pyproject.toml ./
-COPY support_crew/ support_crew/
-COPY static/ static/
 COPY .streamlit/ .streamlit/
 
 RUN chown -R appuser:appuser /app

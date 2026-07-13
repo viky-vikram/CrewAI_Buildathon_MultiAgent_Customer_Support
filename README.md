@@ -47,19 +47,12 @@ Task 3 receives the outputs of Task 1 and Task 2 via CrewAI **task context**
 ## Project Structure
 
 ```
-app.py                     # thin Streamlit entry point
-support_crew/
-├── config.py              # env loading, settings, API-key validation
-├── models.py              # SupportRecord + typed RunResult
-├── errors.py              # error taxonomy, user-safe messages, retries
-├── storage.py             # locked answers.txt appends, Record-IDs, rotation
-├── tools.py               # 'Save Support Record' tool (Entry Agent only)
-├── crew.py                # agents, tasks, sequential crew, run logging
-└── ui/
-    ├── styles.css         # the custom look (gradient sidebar, cards, …)
-    ├── components.py      # logo, step cards, result cards, CSS injection
-    └── views.py           # New Query / History / About pages
-static/logo.svg            # sidebar logo
+app.py                     # ALL application code in one file (per the
+                           # assignment), organised in sections:
+                           #   configuration, models, error taxonomy +
+                           #   retries, locked storage with Record-IDs and
+                           #   rotation, the file-saving tool, the three
+                           #   agents/tasks/crew, and the Streamlit UI
 tests/                     # offline unit + AppTest smoke tests (pytest)
 .github/workflows/ci.yml   # CI: ruff + mypy + pytest on every push
 pyproject.toml             # ruff + mypy + pytest configuration
@@ -249,7 +242,7 @@ or `answers.txt` (see `.dockerignore`).
 ```bash
 pip install -r requirements-dev.txt
 ruff check .     # lint
-mypy             # type check (app.py + support_crew)
+mypy             # type check (app.py)
 pytest           # 41 offline tests
 ```
 
@@ -303,8 +296,8 @@ deactivate
 
 ## GitHub Submission Notes
 
-1. Push the project code to GitHub: `app.py`, the `support_crew/` package,
-   `static/`, `tests/`, `.github/`, `.streamlit/config.toml`,
+1. Push the project code to GitHub: `app.py` (all application code, per
+   the assignment), `tests/`, `.github/`, `.streamlit/config.toml`,
    `pyproject.toml`, `.env.example`, `Dockerfile`, `.dockerignore`,
    `LICENSE`, `requirements.txt`, `requirements-dev.txt`,
    `.gitignore`, `README.md`. The `.gitignore` keeps `venv/`, `.env`,

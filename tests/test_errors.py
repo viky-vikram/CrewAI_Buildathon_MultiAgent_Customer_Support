@@ -2,8 +2,8 @@
 
 import pytest
 
-from support_crew import errors
-from support_crew.errors import CrewRunError, ErrorKind
+import app
+from app import CrewRunError, ErrorKind
 
 
 class AuthenticationError(Exception):
@@ -19,21 +19,21 @@ class APIConnectionError(Exception):
 
 
 def test_classify_auth_by_type_name():
-    assert errors.classify(AuthenticationError("nope")) is ErrorKind.AUTH
+    assert app.classify(AuthenticationError("nope")) is ErrorKind.AUTH
 
 
 def test_classify_auth_by_message():
-    assert errors.classify(Exception("Incorrect API key provided")) is ErrorKind.AUTH
+    assert app.classify(Exception("Incorrect API key provided")) is ErrorKind.AUTH
 
 
 def test_classify_rate_limit():
-    assert errors.classify(RateLimitError("slow down")) is ErrorKind.RATE_LIMIT
-    assert errors.classify(Exception("HTTP 429")) is ErrorKind.RATE_LIMIT
+    assert app.classify(RateLimitError("slow down")) is ErrorKind.RATE_LIMIT
+    assert app.classify(Exception("HTTP 429")) is ErrorKind.RATE_LIMIT
 
 
 def test_classify_timeout_and_network():
-    assert errors.classify(TimeoutError("request timed out")) is ErrorKind.TIMEOUT
-    assert errors.classify(APIConnectionError("boom")) is ErrorKind.NETWORK
+    assert app.classify(TimeoutError("request timed out")) is ErrorKind.TIMEOUT
+    assert app.classify(APIConnectionError("boom")) is ErrorKind.NETWORK
 
 
 def test_classify_walks_the_cause_chain():
@@ -43,16 +43,16 @@ def test_classify_walks_the_cause_chain():
         except RateLimitError as inner:
             raise RuntimeError("wrapper") from inner
     except RuntimeError as outer:
-        assert errors.classify(outer) is ErrorKind.RATE_LIMIT
+        assert app.classify(outer) is ErrorKind.RATE_LIMIT
 
 
 def test_classify_unknown_for_unrelated_errors():
-    assert errors.classify(ValueError("bad value")) is ErrorKind.UNKNOWN
+    assert app.classify(ValueError("bad value")) is ErrorKind.UNKNOWN
 
 
 def test_user_messages_are_specific():
-    auth = errors.message_for(ErrorKind.AUTH, AuthenticationError("x"))
-    unknown = errors.message_for(ErrorKind.UNKNOWN, ValueError("details here"))
+    auth = app.message_for(ErrorKind.AUTH, AuthenticationError("x"))
+    unknown = app.message_for(ErrorKind.UNKNOWN, ValueError("details here"))
     assert "OPENAI_API_KEY" in auth
     assert "details here" in unknown
 
@@ -66,7 +66,7 @@ def test_retries_transient_error_with_backoff_then_succeeds():
             raise APIConnectionError("blip")
         return "ok"
 
-    result = errors.execute_with_retries(
+    result = app.execute_with_retries(
         flaky, attempts=3, base_delay=2.0, sleep=delays.append
     )
     assert result == "ok"
@@ -82,7 +82,7 @@ def test_auth_error_fails_fast_without_retry():
         raise AuthenticationError("invalid api key")
 
     with pytest.raises(CrewRunError) as excinfo:
-        errors.execute_with_retries(
+        app.execute_with_retries(
             bad_key, attempts=3, base_delay=0.0, sleep=lambda _: None
         )
     assert excinfo.value.kind is ErrorKind.AUTH
@@ -94,7 +94,7 @@ def test_exhausted_retries_raise_classified_error():
         raise TimeoutError("timed out")
 
     with pytest.raises(CrewRunError) as excinfo:
-        errors.execute_with_retries(
+        app.execute_with_retries(
             always_timeout, attempts=2, base_delay=0.0, sleep=lambda _: None
         )
     assert excinfo.value.kind is ErrorKind.TIMEOUT
@@ -110,7 +110,7 @@ def test_abort_retry_vetoes_a_transient_retry():
         raise exc
 
     with pytest.raises(CrewRunError):
-        errors.execute_with_retries(
+        app.execute_with_retries(
             flaky, attempts=3, base_delay=0.0,
             abort_retry=lambda exc: bool(getattr(exc, "record_written", False)),
             sleep=lambda _: None,
@@ -119,14 +119,14 @@ def test_abort_retry_vetoes_a_transient_retry():
 
 
 def test_run_with_deadline_returns_fast_results():
-    assert errors.run_with_deadline(lambda: 42, timeout=5.0) == 42
+    assert app.run_with_deadline(lambda: 42, timeout=5.0) == 42
 
 
 def test_run_with_deadline_raises_non_retryable_timeout():
     import time as _time
 
     with pytest.raises(CrewRunError) as excinfo:
-        errors.run_with_deadline(lambda: _time.sleep(2), timeout=0.05)
+        app.run_with_deadline(lambda: _time.sleep(2), timeout=0.05)
     assert excinfo.value.kind is ErrorKind.TIMEOUT
 
 
@@ -139,7 +139,7 @@ def test_deadline_breach_is_never_retried():
         raise CrewRunError(ErrorKind.TIMEOUT, "deadline")
 
     with pytest.raises(CrewRunError):
-        errors.execute_with_retries(
+        app.execute_with_retries(
             breaches_deadline, attempts=3, base_delay=0.0, sleep=lambda _: None
         )
     assert len(calls) == 1
