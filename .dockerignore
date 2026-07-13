@@ -15,6 +15,5 @@ __pycache__/
 .ruff_cache/
 .git/
 .github/
-.claude/
 tests/
 README.md

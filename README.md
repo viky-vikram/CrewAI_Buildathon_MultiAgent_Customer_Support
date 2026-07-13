@@ -63,14 +63,12 @@ static/logo.svg            # sidebar logo
 tests/                     # offline unit + AppTest smoke tests (pytest)
 .github/workflows/ci.yml   # CI: ruff + mypy + pytest on every push
 pyproject.toml             # ruff + mypy configuration
-.pre-commit-config.yaml    # fast pre-commit checks (ruff + hygiene)
 .streamlit/config.toml     # base theme (palette, fonts)
 .env.example               # template for local API keys
 Dockerfile / .dockerignore # container deployment
 LICENSE                    # MIT
 requirements.txt           # runtime dependencies (bounded ranges)
-requirements.lock          # exact tested versions (pip freeze, Windows)
-requirements-dev.txt       # + pytest, ruff, mypy, pre-commit
+requirements-dev.txt       # + pytest, ruff, mypy
 ```
 
 ## Prerequisites
@@ -128,12 +126,9 @@ venv\Scripts\activate.bat
 pip install -r requirements.txt
 ```
 
-For a byte-for-byte reproduction of the tested environment use the lockfile
-instead:
-
-```bash
-pip install -r requirements.lock
-```
+(The CI workflow uploads the exact Linux-resolved dependency versions as a
+`requirements-linux.lock` artifact on every run, if you ever need a
+byte-for-byte reproduction.)
 
 ### 5. Configure API keys
 
@@ -266,13 +261,6 @@ output, pinned model/timeout), UI helpers, and headless app smoke tests
 network access are required. The same three checks run in CI
 (`.github/workflows/ci.yml`) on every push and pull request.
 
-Optionally install the pre-commit hook so ruff and repo-hygiene checks run
-on every commit:
-
-```bash
-pre-commit install
-```
-
 ## About `answers.txt` (data lifecycle)
 
 - Created **automatically** in the project folder after the first successful
@@ -317,11 +305,10 @@ deactivate
 
 1. Push the project code to GitHub: `app.py`, the `support_crew/` package,
    `static/`, `tests/`, `.github/`, `.streamlit/config.toml`,
-   `pyproject.toml`, `.pre-commit-config.yaml`, `.env.example`,
-   `Dockerfile`, `.dockerignore`, `LICENSE`, `requirements.txt`,
-   `requirements.lock`, `requirements-dev.txt`, `pytest.ini`, `.gitignore`,
-   `README.md`. The `.gitignore` keeps `venv/`, `.env`, `answers.txt` and
-   its lock/archive files out of the repository.
+   `pyproject.toml`, `.env.example`, `Dockerfile`, `.dockerignore`,
+   `LICENSE`, `requirements.txt`, `requirements-dev.txt`, `pytest.ini`,
+   `.gitignore`, `README.md`. The `.gitignore` keeps `venv/`, `.env`,
+   `answers.txt` and its lock/archive files out of the repository.
 2. **Keep all API keys out of GitHub** — double-check no `.env` file or key
    string is staged before pushing.
 3. Share the GitHub repository link through **WhatsApp**.

@@ -3,9 +3,9 @@
 # Build:  docker build -t support-crew .
 # Run:    docker run --rm -p 8501:8501 --env-file .env support-crew
 #
-# Installs from requirements.txt (bounded ranges) rather than
-# requirements.lock: the lock was frozen on Windows and contains
-# Windows-only packages (e.g. pywin32) that do not exist on Linux.
+# Installs from requirements.txt (bounded version ranges); the CI
+# workflow uploads the exact Linux-resolved versions as an artifact
+# (requirements-linux.lock) on every run.
 FROM python:3.12-slim
 
 # Streamlit needs a writable home for its config; run as non-root.

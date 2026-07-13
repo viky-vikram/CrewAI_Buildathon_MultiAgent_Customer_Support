@@ -3,7 +3,7 @@
 #   - streamlit is pinned to 1.59.x because the UI styles internal DOM
 #     test-ids that can change between minor releases.
 #   - crewai 1.x is the tested API generation.
-# requirements.lock holds the exact tested versions (pip freeze).
+# CI uploads the exact Linux-resolved versions as an artifact per run.
 crewai>=1.15,<2
 crewai-tools>=1.15,<2
 streamlit>=1.59,<1.60
